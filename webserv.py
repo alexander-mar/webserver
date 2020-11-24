@@ -135,7 +135,7 @@ def main():
     # set up server connection
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) 
-    server.bind((local_host, port)) 
+    server.bind(("127.0.0.1", port)) 
     server.listen()
 
     # start listening for connection
@@ -192,6 +192,24 @@ def main():
                 except FileNotFoundError:
                     client.send(status_404(file_extension).encode())
 
+            #if its a cgi file
+            if "cgibin" in resource:
+
+                #create a pipe 
+                r, w = os.pipe() 
+                #creating grandchild process
+                pid_grandchild= os.fork()
+                # refering to parent
+                if pid_grandchild > 0:
+                    #read pipe from grandchild and sent to client
+                    data = os.read(r)
+                    client.sendall(data.encode("atf-8"))
+                    os.close(r)
+                #referring to grandchild
+                elif pid_grandchild == 0:
+                    #write to pipe
+                    os.dup2(w,1)
+                    os.execv()
         
         #parent process
         elif pid > 0:
