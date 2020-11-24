@@ -162,10 +162,10 @@ def cgi(client, file_extension, filepath, execpath):
     #refering to parent
     if pid_grandchild > 0:
         #read pipe from grandchild and sent to client
-        data_read = os.read(r, 1024).decode()
+        data_read = os.read(r, 4096).decode()
         os.close(w)
         os.close(r)
-        #client.send(status_200(" ", data_read).encode())
+        
         client.send("HTTP/1.1 200 OK\n".encode())
 
         #if not("Content-Type" in data_read):
@@ -179,6 +179,7 @@ def cgi(client, file_extension, filepath, execpath):
         
     #referring to grandchild process
     elif pid_grandchild == 0:
+        print("executing")
         #write to pipe
         os.dup2(w,1)
         if (os.path.isfile(filepath)):
@@ -188,8 +189,10 @@ def cgi(client, file_extension, filepath, execpath):
                 os.close(w)
                 os.close(r)
                 client.send(status_505(file_extension).encode())
+                sys.exit()
             finally:
                 client.close()
+                os._exit(0)
         else:
             client.send(status_505(file_extension).encode())
             client.close()
@@ -284,13 +287,16 @@ def main():
 
             #if its a cgi file
             if "cgibin" in resource:
-
+                
                 environment_setup(request, port)
                 resource= "".join(resource.split("/")[1:]) 
                 file_extension = resource.split(".")[1]
 
+                
+
                 file_path = "./cgibin/{}".format(resource)
                 exec_program = exec_program.strip()
+                
                 cgi(client, file_extension, file_path, exec_program)
 
         #parent process
