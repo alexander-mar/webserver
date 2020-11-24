@@ -264,7 +264,7 @@ def main():
                             every_line = file.readlines
 
                             client.send("HTTP/1.1 200 OK\n".encode())
-                            if not("Content-Type" in every_line[0]):
+                            if not "Content-Type" in every_line[0]:
                                 
                                 client.send(f'Content-Type: {file_extension}\n'.encode())
                             client.send('\n'.encode())
