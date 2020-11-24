@@ -60,6 +60,7 @@ def read_config():
 
 # set up for environment variables in bash
 def environment_setup(request):
+    
     environment_data = {
         "HTTP_HOST":"null",
         "HTTP_USER_AGENT":"null",
@@ -76,11 +77,7 @@ def environment_setup(request):
 
     first_line = request[0]
     environment_data["REQUEST_METHOD"] = first_line[0] #this is like GET
-    print("first line " + str(first_line))
-    print("full request "+request)
-
     environment_data["REQUEST_URI"] = first_line[1].split("?")[0] #resource upon which to apply request, url as given in html
-
     environment_data["SERVER_ADDR"] = "127.0.0.1" #set up so that can access these
     environment_data["SERVER_PORT"] = port
 
@@ -134,7 +131,7 @@ def status_404(file_extension):
     output += "</html>\n"
     return output
    
-
+#status message
 def status_505(file_extension):
     output = "HTTP/1.1 500 Internal Server Error\n\r\n"
     output += "Content-Type: {}\n\n".format(file_extension)
@@ -143,7 +140,7 @@ def status_505(file_extension):
              Server Error</h1>\n</center>\n</body>\n</html>\n"""
     return output
               
-
+#cgi set up method
 def cgi(client, file_extension, filepath, execpath):
     #create a pipe 
     r, w = os.pipe() 
@@ -259,7 +256,7 @@ def main():
             #if its a cgi file
             if "cgibin" in resource:
 
-                environment_setup(request)
+                #environment_setup(request)
                 resource= "".join(resource.split("/")[1:]) 
                 file_extension = resource.split(".")[1]
                 
