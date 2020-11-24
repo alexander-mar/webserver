@@ -74,10 +74,12 @@ def environment_setup(request):
         "CONTENT_LENGTH":"null",
         "QUERY_STRING":"null"}
 
-    first_line = request[0].split(" ")
+    first_line = request[0]
     environment_data["REQUEST_METHOD"] = first_line[0] #this is like GET
-    query = first_line[1].split("?")
-    environment_data["REQUEST_URI"] = query[0] #resource upon which to apply request, url as given in html
+    print("first line " + str(first_line))
+    print("full request "+request)
+
+    environment_data["REQUEST_URI"] = first_line[1].split("?")[0] #resource upon which to apply request, url as given in html
 
     environment_data["SERVER_ADDR"] = "127.0.0.1" #set up so that can access these
     environment_data["SERVER_PORT"] = port
@@ -163,13 +165,11 @@ def main():
       
         resource_name = first_line[1]
         protocol = first_line[2]
-     
-        #creating a new process
-        pid = os.fork()
 
-        # if child process
-        if pid == 0:
-            
+        if resource_name.strip() == "/":
+            resource = "index.html" ### ON THE DAY, PUT AS "./{}/index.html".format(info_tup[0])
+            extension = "html"
+        else:
             #keyline for identifying if cgi or static
             resource = resource_name.lstrip("/")
 
@@ -177,21 +177,28 @@ def main():
             
             temp = resource.split(".")[1:]
             extension = " ".join(temp)
+     
+        #creating a new process
+        pid = os.fork()
+
+        # if child process
+        if pid == 0:
+            
             
             if extension in content_types:
                         file_extension = content_types[extension]
 
             #getting filename for if static file
-            file_name = "./files/" + resource + "."
-
+            file_name = "./files/" + resource
+            
             #set enviroment variables
-            environment_setup(request)
+            #environment_setup(request)
 
             #if static file
             if "cgibin" not in resource:
                 
                 binary_possibilities = ["image/png", "image/jpeg"]
-
+                print(extension)
                 #checking if exists or not
                 try:
                     if extension in binary_possibilities:
@@ -203,6 +210,7 @@ def main():
                             #need to do the content type checking 
                             
                 except FileNotFoundError:
+                    print(file_name)
                     client.send(status_404(file_extension).encode())
                 
                 finally:
