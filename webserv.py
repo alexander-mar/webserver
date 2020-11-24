@@ -2,7 +2,7 @@ import os
 import sys
 import socket
 
-port = 0
+
 local_host = "127.0.0.1" 
 
 # extension dictionary
@@ -59,7 +59,7 @@ def read_config():
     return 
 
 # set up for environment variables in bash
-def environment_setup(request):
+def environment_setup(request, port):
 
     every_line = request.split("\n")
     environment_data = {
@@ -285,7 +285,7 @@ def main():
             #if its a cgi file
             if "cgibin" in resource:
 
-                environment_setup(request)
+                environment_setup(request, port)
                 resource= "".join(resource.split("/")[1:]) 
                 file_extension = resource.split(".")[1]
 
