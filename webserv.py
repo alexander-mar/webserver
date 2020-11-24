@@ -85,7 +85,7 @@ def environment_setup(request):
     environment_data["QUERY_STRING"] = query_string
     os.environ["SERVER_ADDR"] = "127.0.0.1" 
     #environment_data["SERVER_ADDR"] = "127.0.0.1" 
-    environment_data["SERVER_PORT"] = port
+    #environment_data["SERVER_PORT"] = port
     os.environ["SERVER_PORT"] = port
     #going through the body of request
     for line in request[1:]:
