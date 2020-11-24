@@ -60,6 +60,7 @@ def read_config():
 
 # set up for environment variables in bash
 def environment_setup(request):
+
     every_line = request.split("\n")
     environment_data = {
         "HTTP_HOST":"null",
@@ -80,34 +81,41 @@ def environment_setup(request):
     query_string = request_url[1:]
     request_method = every_line[0].split(" ")[0]
 
-    environment_data["REQUEST_METHOD"] = request_method #this is like GET
-    environment_data["REQUEST_URI"] = request_uri #resource upon which to apply request, url as given in html
-    environment_data["QUERY_STRING"] = query_string
+    os.environ["REQUEST_URI"] = request_uri
+    os.environ["REQUEST_METHOD"] = request_method
+    os.environ["QUERY_STRING"] = query_string
     os.environ["SERVER_ADDR"] = "127.0.0.1" 
+    os.environ["SERVER_PORT"] = str(port)
+
+
+    #environment_data["REQUEST_METHOD"] = request_method #this is like GET
+    #environment_data["REQUEST_URI"] = request_uri #resource upon which to apply request, url as given in html
+    #environment_data["QUERY_STRING"] = query_string
+    
     #environment_data["SERVER_ADDR"] = "127.0.0.1" 
-    environment_data["SERVER_PORT"] = port
+    #environment_data["SERVER_PORT"] = port
     #os.environ["SERVER_PORT"] = port
     #going through the body of request
     for line in request[1:]:
 
         if line[0] == "Host":
-            environment_data["HTTP_HOST"] = line[1][1:]
+            os.environ["HTTP_HOST"] = line[1][1:]
         elif line[0] == "User-Agent":
-            environment_data["HTTP_USER_AGENT"] = line[1][1:]
+            os.environ["HTTP_USER_AGENT"] = line[1][1:]
         elif line[0] == "Accept":
-            environment_data["HTTP_ACCEPT"] = line[1][1:]
+            os.environ["HTTP_ACCEPT"] = line[1][1:]
         elif line[0] == "Accept-Encoding":
-            environment_data["HTTP_ACCEPT_ENCODING"] = line[1][1:]
+            os.environ["HTTP_ACCEPT_ENCODING"] = line[1][1:]
         elif line[0] == "Remote-Address":
-            environment_data["REMOTE_ADDRESS"] = line[1][1:]
+            os.environ["REMOTE_ADDRESS"] = line[1][1:]
         elif line[0] == "Content-Type":
-            environment_data["CONTENT_TYPE"] = line[1][1:]
+            os.environ["CONTENT_TYPE"] = line[1][1:]
         elif line[0] == "Content-Length":
-            environment_data["CONTENT_LENGTH"] = line[1][1:]    
+            os.environ["CONTENT_LENGTH"] = line[1][1:]    
     
-    for key, value in environment_data.items():
+    #for key, value in environment_data.items():
         
-        os.environ[str(value)] = str(key)
+       # os.environ[str(value)] = str(key)
     
 #status message
 def status_200(file_extension, file):
