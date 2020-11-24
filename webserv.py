@@ -144,7 +144,7 @@ def status_505(file_extension):
     return output
               
 
-def cgi(client, file_extension, filepath):
+def cgi(client, file_extension, filepath, execpath):
     #create a pipe 
     r, w = os.pipe() 
 
@@ -170,7 +170,7 @@ def cgi(client, file_extension, filepath):
         os.dup2(w,1)
         if (os.path.isfile(filepath)):
             try:
-                os.execv() #add params
+                os.execv(execpath, (execpath, filepath))
             except OSError:
                 client.send(status_505(file_extension).encode())
             finally:
@@ -232,7 +232,7 @@ def main():
             file_name = "./files/" + resource
             
             #set enviroment variables
-            #environment_setup(request)
+            environment_setup(request)
 
             #if static file
             if "cgibin" not in resource:
@@ -258,8 +258,15 @@ def main():
 
             #if its a cgi file
             if "cgibin" in resource:
+
+                
+                resource= "".join(resource.split("/")[1:]) 
+                file_extension = resource.split(".")[1]
+                
+
                 file_path = "./cgibin/{}".format(resource)
-                cgi(client, file_extension, file_path)
+                exec_program = exec_program.strip()
+                cgi(client, file_extension, file_path, exec_program)
 
         #parent process
         elif pid > 0:
