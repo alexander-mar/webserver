@@ -132,7 +132,7 @@ def status_404(file_extension):
 
 #main method
 def main():
-    
+    print("b")
     read_config()
     
     # set up server connection
