@@ -174,7 +174,7 @@ def main():
             resource = resource_name.lstrip("/")
 
             #identifying neccessary extension
-            extension = "".join(resource.split("."[1:]))
+            extension = " ".join(resource.split("."[1:]))
             if extension in content_types:
                         file_extension = content_types[extension]
 
