@@ -143,7 +143,7 @@ def main():
 
     # start listening for connection
     while True:
-        
+        print("b")
         accept_results = server.accept()
         client = accept_results[0]
         addr = accept_results[1]
@@ -156,7 +156,7 @@ def main():
         method = first_line[0]
         resource_name = first_line[1]
         protocol = first_line[2]
-
+        print("x")
         #creating a new process
         pid = os.fork()
 
@@ -179,7 +179,7 @@ def main():
 
             #if static file
             if "cgibin" not in resource:
-                print("b")
+                
                 binary_possibilities = ["image/png", "image/jpeg"]
 
                 #checking if exists or not
