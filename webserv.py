@@ -262,16 +262,15 @@ def main():
                     else:
                         with open(file_name, "r") as file:
                             every_line = file.readlines
-                            
+
+                            client.send("HTTP/1.1 200 OK\n".encode())
                             if not("Content-Type" in every_line[0]):
-                                client.send("HTTP/1.1 200 OK\n".encode())
+                                
                                 client.send(f'Content-Type: {file_extension}\n'.encode())
-                                client.send('\n'.encode())
-                                for line in every_line:
-                                    client.send(line.encode())
-                            else:
-                                client.send(status_200(file_extension, file).encode())
-                            file.close()    
+                            client.send('\n'.encode())
+                            for line in every_line:
+                                client.send(line.encode())
+                            
                             #need to do the content type checking 
                             
                 except FileNotFoundError:
