@@ -60,7 +60,7 @@ def read_config():
 
 # set up for environment variables in bash
 def environment_setup(request):
-    
+    every_line = request.split("\n")
     environment_data = {
         "HTTP_HOST":"null",
         "HTTP_USER_AGENT":"null",
@@ -75,13 +75,18 @@ def environment_setup(request):
         "CONTENT_LENGTH":"null",
         "QUERY_STRING":"null"}
 
-    first_line = request[0]
-    environment_data["REQUEST_METHOD"] = first_line[0] #this is like GET
-    environment_data["REQUEST_URI"] = first_line[1].split("?")[0] #resource upon which to apply request, url as given in html
-    environment_data["SERVER_ADDR"] = "127.0.0.1" #set up so that can access these
+    request_url = "".join(every_line[0].split(" ")[1].split("?"))
+    request_uri = request_url[:1]
+    query_string = request_url[1:]
+    request_method = every_line[0].split(" ")[0]
+
+    environment_data["REQUEST_METHOD"] = request_method #this is like GET
+    environment_data["REQUEST_URI"] = request_uri #resource upon which to apply request, url as given in html
+    environment_data["QUERY_STRING"] = query_string
+    environment_data["SERVER_ADDR"] = "127.0.0.1" 
     environment_data["SERVER_PORT"] = port
 
-    #going through the body and not the header now
+    #going through the body of request
     for line in request[1:]:
 
         if line[0] == "Host":
@@ -97,14 +102,10 @@ def environment_setup(request):
         elif line[0] == "Content-Type":
             environment_data["CONTENT_TYPE"] = line[1][1:]
         elif line[0] == "Content-Length":
-            environment_data["CONTENT_LENGTH"] = line[1][1:]
-        #Is setting the query string neccesary
-
-    before, after = first_line[1].split("?")
-    environment_data["QUERY_STRING"] = after
-
+            environment_data["CONTENT_LENGTH"] = line[1][1:]    
+    
     for key, value in environment_data.items():
-        os.environ[value] = key
+        os.environ[str(value)] = str(key)
     
 #status message
 def status_200(file_extension, file):
@@ -247,7 +248,7 @@ def main():
                             #need to do the content type checking 
                             
                 except FileNotFoundError:
-                    print(file_name)
+                    
                     client.send(status_404(file_extension).encode())
                 
                 finally:
@@ -256,7 +257,7 @@ def main():
             #if its a cgi file
             if "cgibin" in resource:
 
-                #environment_setup(request)
+                environment_setup(request)
                 resource= "".join(resource.split("/")[1:]) 
                 file_extension = resource.split(".")[1]
                 
