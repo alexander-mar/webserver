@@ -83,7 +83,8 @@ def environment_setup(request):
     environment_data["REQUEST_METHOD"] = request_method #this is like GET
     environment_data["REQUEST_URI"] = request_uri #resource upon which to apply request, url as given in html
     environment_data["QUERY_STRING"] = query_string
-    environment_data["SERVER_ADDR"] = "127.0.0.1" 
+    os.environ["SERVER_ADDR"] = "127.0.0.1" 
+    #environment_data["SERVER_ADDR"] = "127.0.0.1" 
     environment_data["SERVER_PORT"] = port
 
     #going through the body of request
@@ -105,6 +106,7 @@ def environment_setup(request):
             environment_data["CONTENT_LENGTH"] = line[1][1:]    
     
     for key, value in environment_data.items():
+        print(os.environ)
         os.environ[str(value)] = str(key)
     
 #status message
@@ -166,7 +168,6 @@ def cgi(client, file_extension, filepath, execpath):
         #client.sendall(data.encode("atf-8"))
         #os.close(r)
         
-
     #referring to grandchild process
     elif pid_grandchild == 0:
         #write to pipe
