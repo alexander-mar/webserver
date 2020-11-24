@@ -106,7 +106,7 @@ def environment_setup(request):
             environment_data["CONTENT_LENGTH"] = line[1][1:]    
     
     for key, value in environment_data.items():
-        print(os.environ)
+        
         os.environ[str(value)] = str(key)
     
 #status message
