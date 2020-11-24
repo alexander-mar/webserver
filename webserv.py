@@ -155,7 +155,12 @@ def cgi(client, file_extension, filepath, execpath):
         data_read = os.read(r, 1024).decode()
         os.close(w)
         os.close(r)
-        client.send(status_200(" ", data_read).encode())
+        #client.send(status_200(" ", data_read).encode())
+        client.send("HTTP/1.1 200 OK\n".encode())
+        if not("Content-Type" in data_read):
+            client.send("Content-Type: \n".encode())
+        client.send("\n".encode())
+        client.sendall(data_read.encode())
         client.close()
         #data = os.read(r)
         #client.sendall(data.encode("atf-8"))
