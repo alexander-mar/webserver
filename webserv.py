@@ -129,7 +129,7 @@ def status_404(file_extension):
 
 #main method
 def main():
-    
+    print("GERE")
     read_config()
     
     # set up server connection
@@ -140,7 +140,7 @@ def main():
 
     # start listening for connection
     while True:
-        print("GERE")
+        
         accept_results = server.accept()
         client = accept_results[0]
         addr = accept_results[1]
