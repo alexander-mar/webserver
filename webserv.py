@@ -5,7 +5,7 @@ import socket
 port = 0
 local_host = ""
 
-# mapping hashmap, dictionary thing
+# extension dictionary
 content_types = {
 		"txt" 	: "text/plain",
 		"html": "text/html",
@@ -107,6 +107,7 @@ def environment_setup(request):
     
 #status message
 def status_200(file_extension, file):
+    print("a")
     output = "HTTP/1.1 200 OK\n"
     output += "Content Type: {}\n\n".format(file_extension)
     data = ""
@@ -178,7 +179,7 @@ def main():
 
             #if static file
             if "cgibin" not in resource:
-
+                print("b")
                 binary_possibilities = ["image/png", "image/jpeg"]
 
                 #checking if exists or not
@@ -196,25 +197,6 @@ def main():
                 
                 finally:
                     client.close()
-
-            #if its a cgi file
-            if "cgibin" in resource:
-
-                #create a pipe 
-                r, w = os.pipe() 
-                #creating grandchild process
-                pid_grandchild= os.fork()
-                # refering to parent
-                if pid_grandchild > 0:
-                    #read pipe from grandchild and sent to client
-                    data = os.read(r)
-                    client.sendall(data.encode("atf-8"))
-                    os.close(r)
-                #referring to grandchild
-                elif pid_grandchild == 0:
-                    #write to pipe
-                    os.dup2(w,1)
-                    os.execv()
         
         #parent process
         elif pid > 0:
