@@ -3,7 +3,7 @@ import sys
 import socket
 
 port = 0
-local_host = ""
+local_host = "127.0.0.1" 
 
 # extension dictionary
 content_types = {
@@ -20,6 +20,7 @@ content_types = {
 # configuration parser method
 def read_config():
     lines = []
+    print("in config")
     try:
 
         config = open(sys.argv[1], "r")
@@ -42,9 +43,10 @@ def read_config():
 
         staticfile_directory = lines[0][1]
         cgibin_directory = lines[1][1]
-        port = int(lines[2][1])
+        port = int(lines[2][1].strip())
         exec_program = lines[3][1]
-        local_host = "127.0.0.1" 
+        #local_host = "127.0.0.1" 
+        return (staticfile_directory, cgibin_directory, port, exec_program)
 
     except FileNotFoundError: #other path testing technique? path exists
         print("Unable to load configuration file")
@@ -53,7 +55,7 @@ def read_config():
     except IndexError:
         print("Missing Configuration Argument")
         sys.exit(1)
-
+    print("end of config")
     return 
 
 # set up for environment variables in bash
@@ -133,7 +135,8 @@ def status_404(file_extension):
 #main method
 def main():
     print("b")
-    read_config()
+
+    staticfile_directory, cgibin_directory, port, exec_program =read_config()
     
     # set up server connection
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
