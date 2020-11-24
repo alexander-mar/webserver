@@ -167,9 +167,10 @@ def cgi(client, file_extension, filepath, execpath):
         os.close(r)
         #client.send(status_200(" ", data_read).encode())
         client.send("HTTP/1.1 200 OK\n".encode())
-        if not("Content-Type" in data_read):
-           client.send("Content-Type: \n".encode())
-        client.send("\n".encode())
+
+        #if not("Content-Type" in data_read):
+         #  client.send("Content-Type: \n".encode())
+        #client.send("\n".encode())
         client.sendall(data_read.encode())
         client.close()
         #data = os.read(r)
@@ -260,7 +261,17 @@ def main():
                             client.send(status_200(file_extension, file).encode())
                     else:
                         with open(file_name, "r") as file:
-                            client.send(status_200(file_extension, file).encode())
+                            every_line = file.readlines
+                            
+                            if not("Content-Type" in every_line[0]):
+                                client.send("HTTP/1.1 200 OK\n".encode())
+                                client.send(f'Content-Type: {file_extension}\n'.encode())
+                                client.send('\n'.encode())
+                                for line in every_line:
+                                    client.send(line.encode())
+                            else:
+                                client.send(status_200(file_extension, file).encode())
+                            file.close()    
                             #need to do the content type checking 
                             
                 except FileNotFoundError:
