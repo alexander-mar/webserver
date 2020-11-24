@@ -77,7 +77,7 @@ def environment_setup(request):
     query = first_line[1].split("?")
     environment_data["REQUEST_URI"] = query[0] #resource upon which to apply request, url as given in html
 
-    environment_data["SERVER_ADDR"] = local_host #set up so that can access these
+    environment_data["SERVER_ADDR"] = "127.0.0.1" #set up so that can access these
     environment_data["SERVER_PORT"] = port
 
     #going through the body and not the header now
@@ -101,6 +101,9 @@ def environment_setup(request):
 
     before, after = first_line[1].split("?")
     environment_data["QUERY_STRING"] = after
+
+    for key, value in environment_data.items():
+        os.environ[value] = key
     
 #status message
 def status_200(file_extension, file):
@@ -194,7 +197,25 @@ def main():
                 finally:
                     client.close()
 
-            
+            #if its a cgi file
+            if "cgibin" in resource:
+
+                #create a pipe 
+                r, w = os.pipe() 
+                #creating grandchild process
+                pid_grandchild= os.fork()
+                # refering to parent
+                if pid_grandchild > 0:
+                    #read pipe from grandchild and sent to client
+                    data = os.read(r)
+                    client.sendall(data.encode("atf-8"))
+                    os.close(r)
+                #referring to grandchild
+                elif pid_grandchild == 0:
+                    #write to pipe
+                    os.dup2(w,1)
+                    os.execv()
+        
         #parent process
         elif pid > 0:
             client.close()
