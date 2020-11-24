@@ -117,22 +117,23 @@ def status_200(file_extension, file):
     data = ""
     lines = file.readlines()
     for line in lines:
-        data += line+"\n"
+        data += line
 
     output += data
     return output
 
 #status message
 def status_404(file_extension):
-	output = "HTTP/1.1 404 Not Found\n"
-	output += "Content-Type: {}\n\n".format(file_extension)
-	output += "<html>\n"
-	output += "<head><title>404 Not Found</title></head>\n"
-	output += "<body>\n"
-	output += "    <h1>404 Not Found</h1>\n"
-	output += "</body>\n"
-	output += "</html>\n"
-	return output
+    output = "HTTP/1.1 404 File Not Found\n"
+    output += "Content-Type: {}\n\n".format(file_extension)
+    output += "<html>\n"
+    output += "<head>\n"
+    output += "     <title>404 Not Found</title></head>\n"
+    output += "<body>\n"
+    output += "    <h1>404 Not Found</h1>\n"
+    output += "</body>\n"
+    output += "</html>\n"
+    return output
 
 #main method
 def main():
