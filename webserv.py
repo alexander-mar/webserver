@@ -77,7 +77,8 @@ def environment_setup(request, port):
         "QUERY_STRING":"null"}
 
     request_url = "".join(every_line[0].split(" ")[1].split("?"))
-    request_uri = request_url[:1]
+    temp =  every_line[0].split(" ")[1].split("?")[:1]
+    request_uri = "".join(temp)
     query_string = request_url[1:]
     request_method = every_line[0].split(" ")[0]
 
@@ -86,7 +87,7 @@ def environment_setup(request, port):
     os.environ["QUERY_STRING"] = query_string
     os.environ["SERVER_ADDR"] = "127.0.0.1" 
     os.environ["SERVER_PORT"] = str(port)
-
+    print("HERE"+request_uri)
 
     #environment_data["REQUEST_METHOD"] = request_method #this is like GET
     #environment_data["REQUEST_URI"] = request_uri #resource upon which to apply request, url as given in html
@@ -184,16 +185,22 @@ def cgi(client, file_extension, filepath, execpath):
         os.dup2(w,1)
         if (os.path.isfile(filepath)):
             try:
+                print("here")
                 os.execv(execpath, (execpath, filepath))
+                os.execv()
             except FileNotFoundError:
+                print("here")
                 os.close(w)
                 os.close(r)
                 client.send(status_505(file_extension).encode())
                 sys.exit()
             finally:
+                print("here")
                 client.close()
                 os._exit(0)
         else:
+            print(os.path)
+            print(filepath)
             client.send(status_505(file_extension).encode())
             client.close()
 
@@ -296,6 +303,8 @@ def main():
 
                 file_path = "./cgibin/{}".format(resource)
                 exec_program = exec_program.strip()
+                print(exec_program)
+                print(file_path)
                 
                 cgi(client, file_extension, file_path, exec_program)
 
