@@ -130,98 +130,100 @@ def status_404(file_extension):
 	return output
 
 #main method
-
-print("hello")
-read_config()
-
-# set up server connection
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) 
-server.bind(("127.0.0.1", port)) 
-server.listen()
-
-# start listening for connection
-while True:
+def main():
     
-    accept_results = server.accept()
-    client = accept_results[0]
-    addr = accept_results[1]
+    read_config()
+    
+    # set up server connection
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) 
+    server.bind(("127.0.0.1", port)) 
+    server.listen()
 
-    #entire html request
-    request = client.recv(1024).decode()
-
-    #first line key info
-    first_line = request.split("/n")[0].split()
-    method = first_line[0]
-    resource_name = first_line[1]
-    protocol = first_line[2]
-
-    #creating a new process
-    pid = os.fork()
-
-    # if child process
-    if pid == 0:
+    # start listening for connection
+    while True:
         
-        #keyline for identifying if cgi or static
-        resource = resource_name.lstrip("/")
+        accept_results = server.accept()
+        client = accept_results[0]
+        addr = accept_results[1]
 
-        #identifying neccessary extension
-        extension = "".join(resource.split("."[1:]))
-        if extension in content_types:
-                    file_extension = content_types[extension]
+        #entire html request
+        request = client.recv(1024).decode()
 
-        #getting filename for if static file
-        file_name = "./files/" + resource + "."
+        #first line key info
+        first_line = request.split("/n")[0].split()
+        method = first_line[0]
+        resource_name = first_line[1]
+        protocol = first_line[2]
 
-        #set enviroment variables
-        environment_setup(request)
+        #creating a new process
+        pid = os.fork()
 
-        #if static file
-        if "cgibin" not in resource:
-
-            binary_possibilities = ["image/png", "image/jpeg"]
-
-            #checking if exists or not
-            try:
-                if extension in binary_possibilities:
-                    with open(file_name, "rb") as file:
-                        client.send(status_200(file_extension, file).encode())
-                else:
-                    with open(file_name, "r") as file:
-                        client.send(status_200(file_extension, file).encode())
-                        #need to do the content type checking 
-                        
-            except FileNotFoundError:
-                client.send(status_404(file_extension).encode())
+        # if child process
+        if pid == 0:
             
-            finally:
-                client.close()
+            #keyline for identifying if cgi or static
+            resource = resource_name.lstrip("/")
 
-        #if its a cgi file
-        if "cgibin" in resource:
+            #identifying neccessary extension
+            extension = "".join(resource.split("."[1:]))
+            if extension in content_types:
+                        file_extension = content_types[extension]
 
-            #create a pipe 
-            r, w = os.pipe() 
-            #creating grandchild process
-            pid_grandchild= os.fork()
-            # refering to parent
-            if pid_grandchild > 0:
-                #read pipe from grandchild and sent to client
-                data = os.read(r)
-                client.sendall(data.encode("atf-8"))
-                os.close(r)
-            #referring to grandchild
-            elif pid_grandchild == 0:
-                #write to pipe
-                os.dup2(w,1)
-                os.execv()
-    
-    #parent process
-    elif pid > 0:
-        client.close()
+            #getting filename for if static file
+            file_name = "./files/" + resource + "."
 
-    #error
-    elif pid < 0:
-        client.close()
-        sys.exit(1)
+            #set enviroment variables
+            environment_setup(request)
 
+            #if static file
+            if "cgibin" not in resource:
+
+                binary_possibilities = ["image/png", "image/jpeg"]
+
+                #checking if exists or not
+                try:
+                    if extension in binary_possibilities:
+                        with open(file_name, "rb") as file:
+                            client.send(status_200(file_extension, file).encode())
+                    else:
+                        with open(file_name, "r") as file:
+                            client.send(status_200(file_extension, file).encode())
+                            #need to do the content type checking 
+                            
+                except FileNotFoundError:
+                    client.send(status_404(file_extension).encode())
+                
+                finally:
+                    client.close()
+
+            #if its a cgi file
+            if "cgibin" in resource:
+
+                #create a pipe 
+                r, w = os.pipe() 
+                #creating grandchild process
+                pid_grandchild= os.fork()
+                # refering to parent
+                if pid_grandchild > 0:
+                    #read pipe from grandchild and sent to client
+                    data = os.read(r)
+                    client.sendall(data.encode("atf-8"))
+                    os.close(r)
+                #referring to grandchild
+                elif pid_grandchild == 0:
+                    #write to pipe
+                    os.dup2(w,1)
+                    os.execv()
+        
+        #parent process
+        elif pid > 0:
+            client.close()
+
+        #error
+        elif pid < 0:
+            client.close()
+            sys.exit(1)
+
+if __name__ == '__main__':
+    main()
