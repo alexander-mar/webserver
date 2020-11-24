@@ -85,8 +85,8 @@ def environment_setup(request):
     environment_data["QUERY_STRING"] = query_string
     os.environ["SERVER_ADDR"] = "127.0.0.1" 
     #environment_data["SERVER_ADDR"] = "127.0.0.1" 
-    #environment_data["SERVER_PORT"] = port
-    os.environ["SERVER_PORT"] = port
+    environment_data["SERVER_PORT"] = port
+    #os.environ["SERVER_PORT"] = port
     #going through the body of request
     for line in request[1:]:
 
@@ -266,7 +266,6 @@ def main():
                 environment_setup(request)
                 resource= "".join(resource.split("/")[1:]) 
                 file_extension = resource.split(".")[1]
-                
 
                 file_path = "./cgibin/{}".format(resource)
                 exec_program = exec_program.strip()
