@@ -158,7 +158,7 @@ def main():
        
         #first line key info
         first_line = request.split("/n")[0].split()
-     
+
         method = first_line[0]
       
         resource_name = first_line[1]
@@ -174,7 +174,10 @@ def main():
             resource = resource_name.lstrip("/")
 
             #identifying neccessary extension
-            extension = " ".join(resource.split("."[1:]))
+            
+            temp = resource.split(".")[1:]
+            extension = " ".join(temp)
+            
             if extension in content_types:
                         file_extension = content_types[extension]
 
