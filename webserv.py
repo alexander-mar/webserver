@@ -1,4 +1,3 @@
-# imports
 import os
 import sys
 import socket
@@ -103,7 +102,7 @@ def environment_setup(request):
     before, after = first_line[1].split("?")
     environment_data["QUERY_STRING"] = after
     
-#status messages
+#status message
 def status_200(file_extension, file):
     output = "HTTP/1.1 200 OK\n"
     output += "Content Type: {}\n\n".format(file_extension)
@@ -115,7 +114,7 @@ def status_200(file_extension, file):
     output += data
     return output
 
-
+#status message
 def status_404(file_extension):
 	output = "HTTP/1.1 404 Not Found\n"
 	output += "Content-Type: {}\n\n".format(file_extension)
@@ -129,7 +128,7 @@ def status_404(file_extension):
 
 #main method
 def main():
-    print("GERE")
+    
     read_config()
     
     # set up server connection
@@ -191,26 +190,11 @@ def main():
                             
                 except FileNotFoundError:
                     client.send(status_404(file_extension).encode())
+                
+                finally:
+                    client.close()
 
-            #if its a cgi file
-            if "cgibin" in resource:
-
-                #create a pipe 
-                r, w = os.pipe() 
-                #creating grandchild process
-                pid_grandchild= os.fork()
-                # refering to parent
-                if pid_grandchild > 0:
-                    #read pipe from grandchild and sent to client
-                    data = os.read(r)
-                    client.sendall(data.encode("atf-8"))
-                    os.close(r)
-                #referring to grandchild
-                elif pid_grandchild == 0:
-                    #write to pipe
-                    os.dup2(w,1)
-                    os.execv()
-        
+            
         #parent process
         elif pid > 0:
             client.close()
