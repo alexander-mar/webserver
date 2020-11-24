@@ -145,15 +145,19 @@ def main():
     while True:
         print("b")
         accept_results = server.accept()
+        print("c")
         client = accept_results[0]
+        print("d")
         addr = accept_results[1]
-
+        print("e")
         #entire html request
         request = client.recv(1024).decode()
-
+        print("f")
         #first line key info
         first_line = request.split("/n")[0].split()
+        print("f")
         method = first_line[0]
+        print("f")
         resource_name = first_line[1]
         protocol = first_line[2]
         print("x")
