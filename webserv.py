@@ -20,7 +20,7 @@ content_types = {
 # configuration parser method
 def read_config():
     lines = []
-    print("in config")
+    
     try:
 
         config = open(sys.argv[1], "r")
@@ -55,7 +55,7 @@ def read_config():
     except IndexError:
         print("Missing Configuration Argument")
         sys.exit(1)
-    print("end of config")
+ 
     return 
 
 # set up for environment variables in bash
@@ -109,7 +109,7 @@ def environment_setup(request):
     
 #status message
 def status_200(file_extension, file):
-    print("a")
+
     output = "HTTP/1.1 200 OK\n"
     output += "Content Type: {}\n\n".format(file_extension)
     data = ""
@@ -134,7 +134,7 @@ def status_404(file_extension):
 
 #main method
 def main():
-    print("b")
+    
 
     staticfile_directory, cgibin_directory, port, exec_program =read_config()
     
@@ -146,24 +146,24 @@ def main():
 
     # start listening for connection
     while True:
-        print("b")
+        
         accept_results = server.accept()
-        print("c")
+        
         client = accept_results[0]
-        print("d")
+        
         addr = accept_results[1]
-        print("e")
+        
         #entire html request
         request = client.recv(1024).decode()
-        print("f")
+       
         #first line key info
         first_line = request.split("/n")[0].split()
-        print("f")
+     
         method = first_line[0]
-        print("f")
+      
         resource_name = first_line[1]
         protocol = first_line[2]
-        print("x")
+     
         #creating a new process
         pid = os.fork()
 
