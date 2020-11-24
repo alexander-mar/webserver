@@ -45,7 +45,7 @@ def read_config():
         cgibin_directory = lines[1][1]
         port = int(lines[2][1].strip())
         exec_program = lines[3][1]
-        #local_host = "127.0.0.1" 
+        
         return (staticfile_directory, cgibin_directory, port, exec_program)
 
     except FileNotFoundError: #other path testing technique? path exists
@@ -124,7 +124,7 @@ def status_200(file_extension, file):
 
 #status message
 def status_404(file_extension):
-    output = "HTTP/1.1 404 File Not Found\n"
+    output = "HTTP/1.1 404 File not found\n"
     output += "Content-Type: {}\n\n".format(file_extension)
     output += "<html>\n"
     output += "<head>\n"
@@ -135,10 +135,56 @@ def status_404(file_extension):
     output += "</html>\n"
     return output
 
+def status_505(file_extension):
+    output = "HTTP/1.1 500 Internal Server Error\n\r\n"
+    output += "Content-Type: {}\n\n".format(file_extension)
+    output += """500 Internal Server Error\n\n<html>\n<head>\n\t<title>500 Internal Server 
+            Error</title>\n</head><body bgcolor="white">\n<center>\n\t<h1>500 Internal
+             Server Error</h1>\n</center>\n</body>\n</html>\n"""
+    return output
+              
+
+def cgi(client, file_extension, filepath):
+    #create a pipe 
+    r, w = os.pipe() 
+
+    #creating grandchild process
+    pid_grandchild = os.fork()
+
+    #refering to parent
+    if pid_grandchild > 0:
+        #read pipe from grandchild and sent to client
+        data_read = os.read(r, 1024).decode()
+        os.close(w)
+        os.close(r)
+        client.send(status_200(" ", data_read).encode())
+        client.close()
+        #data = os.read(r)
+        #client.sendall(data.encode("atf-8"))
+        #os.close(r)
+        
+
+    #referring to grandchild process
+    elif pid_grandchild == 0:
+        #write to pipe
+        os.dup2(w,1)
+        if (os.path.isfile(filepath)):
+            try:
+                os.execv() #add params
+            except OSError:
+                client.send(status_505(file_extension).encode())
+            finally:
+                client.close()
+        else:
+            client.send(status_505(file_extension).encode())
+            client.close()
+
+    #error recieved
+    else:
+        client.close()
+
 #main method
 def main():
-    
-
     staticfile_directory, cgibin_directory, port, exec_program =read_config()
     
     # set up server connection
@@ -149,11 +195,8 @@ def main():
 
     # start listening for connection
     while True:
-        
         accept_results = server.accept()
-        
         client = accept_results[0]
-        
         addr = accept_results[1]
         
         #entire html request
@@ -161,9 +204,7 @@ def main():
        
         #first line key info
         first_line = request.split("/n")[0].split()
-
         method = first_line[0]
-      
         resource_name = first_line[1]
         protocol = first_line[2]
 
@@ -175,7 +216,6 @@ def main():
             resource = resource_name.lstrip("/")
 
             #identifying neccessary extension
-            
             temp = resource.split(".")[1:]
             extension = " ".join(temp)
      
@@ -184,7 +224,6 @@ def main():
 
         # if child process
         if pid == 0:
-            
             
             if extension in content_types:
                         file_extension = content_types[extension]
@@ -199,7 +238,7 @@ def main():
             if "cgibin" not in resource:
                 
                 binary_possibilities = ["image/png", "image/jpeg"]
-                print(extension)
+                
                 #checking if exists or not
                 try:
                     if extension in binary_possibilities:
@@ -216,7 +255,12 @@ def main():
                 
                 finally:
                     client.close()
-        
+
+            #if its a cgi file
+            if "cgibin" in resource:
+                file_path = "./cgibin/{}".format(resource)
+                cgi(client, file_extension, file_path)
+
         #parent process
         elif pid > 0:
             client.close()
