@@ -127,13 +127,13 @@ def status_404(file_extension):
     output = "HTTP/1.1 404 File not found\n"
     output += "Content-Type: {}\n\n".format(file_extension)
     output += "<html>\n"
-    output += "<head>\n"
-    output += "     <title>404 Not Found</title></head>\n"
-    output += "<body>\n"
-    output += "    <h1>404 Not Found</h1>\n"
+    output += "<head>\n\t<title>404 Not Found</title>\n</head>\n"
+    output += '<body bgcolor="white">\n'
+    output += "<center>\n\t<h1>404 Not Found</h1>\n</center>\n"
     output += "</body>\n"
     output += "</html>\n"
     return output
+   
 
 def status_505(file_extension):
     output = "HTTP/1.1 500 Internal Server Error\n\r\n"
@@ -232,7 +232,7 @@ def main():
             file_name = "./files/" + resource
             
             #set enviroment variables
-            environment_setup(request)
+            
 
             #if static file
             if "cgibin" not in resource:
@@ -259,7 +259,7 @@ def main():
             #if its a cgi file
             if "cgibin" in resource:
 
-                
+                environment_setup(request)
                 resource= "".join(resource.split("/")[1:]) 
                 file_extension = resource.split(".")[1]
                 
