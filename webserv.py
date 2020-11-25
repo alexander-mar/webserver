@@ -191,6 +191,7 @@ def cgi(client, file_extension, filepath, execpath):
 
     #refering to parent
     elif pid_grandchild > 0:
+        wait = os.wait()
         #read pipe from grandchild and sent to client
         data_read = os.read(r, 4096).decode()
         os.close(w)
