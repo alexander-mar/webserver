@@ -170,9 +170,7 @@ def cgi(client, file_extension, filepath, execpath):
         if (os.path.isfile(filepath)):
             try:
                 os.execv(execpath, (execpath, filepath))
-                
             except FileNotFoundError:
-                
                 os.close(w)
                 os.close(r)
                 client.send("HTTP/1.1 500 Internal Server Error\n".encode())
@@ -181,9 +179,7 @@ def cgi(client, file_extension, filepath, execpath):
                 client.send(err_string.encode())
                 client.send
                 sys.exit()
-
             finally:
-                
                 client.close()
                 os._exit(0)
         else:
@@ -191,29 +187,24 @@ def cgi(client, file_extension, filepath, execpath):
             err_string = """500 Internal Server Error\n\n<html>\n<head>\n\t<title>500 Internal Server Error</title>\n</head>
     <body bgcolor="white">\n<center>\n\t<h1>500 Internal Server Error</h1>\n</center>\n</body>\n</html>\n"""
             client.send(err_string.encode())
-            #client.send(status_505(file_extension).encode())
             client.close()
 
-
-
-    #refering to parent
     elif pid_grandchild > 0:
-        
-        wait = os.wait()
-        #read pipe from grandchild and sent to client
+        # parent
+        wait_id = os.wait()
         data_read = os.read(r, 4096).decode()
         os.close(w)
         os.close(r)
-        
-        #could send preset one as well?
-        client.send("HTTP/1.1 200 OK\n".encode())
+        client.send("HTTP/1.1 303 Custom Status\n".encode())
+        client.send("Content-Type: text/html\n".encode())
+        client.send("\n".encode())
         client.sendall(data_read.encode())
         client.close()
-
-    #error recieved
     else:
-        client.close()   
-   
+        # error
+        client.close()
+        sys.exit()
+
     
 
 #main method
