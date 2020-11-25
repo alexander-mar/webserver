@@ -159,6 +159,7 @@ def status_505(file_extension):
 def cgi(client, file_extension, filepath, execpath):
     error = False
     #create a pipe 
+    content_read = ""
     r, w = os.pipe() 
 
     #creating grandchild process
@@ -166,10 +167,10 @@ def cgi(client, file_extension, filepath, execpath):
 
     #referring to grandchild process
     if pid_grandchild == 0:
-       
+        os.close(r)
         #write to pipe
-        
         os.dup2(w,1)
+        os.dup2(w,2)
 
         if (os.path.isfile(filepath)):
             try:
@@ -179,31 +180,63 @@ def cgi(client, file_extension, filepath, execpath):
                 error = True
                 os._exit(0)
                 
-
             finally:
-                
                 client.close()
-                os._exit(0)
+                
+            os._exit(0)
 
     #refering to parent
     elif pid_grandchild > 0:
         
         #wait = os.wait()
         #read pipe from grandchild and sent to client
-        data_read = os.read(r, 1024).decode()
+        content_read = os.read(r, 1024).decode().split("\n")
         os.close(w)
         os.close(r)
-        if error:
-            client.send(status_505(file_extension).encode())
-        else:
-            client.send(status_200(file_extension, data_read).encode())
+        wait = os.wait()
+        if(wait[1] != 0):
+            client.send("HTTP/1.1 500 Internal Server Error".encode())
+            client.close()
+
+
         client.close()
-        
         
     #error recieved
     else:
+        client.send("HTTP/1.1 500 Internal Server Error".encode())
         client.close()
-         
+
+    #preparing message
+    
+    i = 0
+    while(i < len(content_read)):
+        if("Status-Code" in content_read[i]):
+            codes = content_read[i].split(" ",2)
+            status_string = "HTTP/1.1 {} {}\n".format(codes[1],codes[2])
+        elif("Content-Type" in content_read[i]):
+            header = content_read[i]
+        else:
+            break
+        i += 1
+
+    if(i > 0):
+        content_read = content_read[i+1:]
+
+    processed_info =  "\n".join(content_read), header, status_string
+    
+    msg = ""
+    if(processed_info[2] == ""):
+        msg += "HTTP/1.1 200 OK\n"
+    else:
+        msg += processed_info[2]
+    if(processed_info[2] == ""):
+        msg += "Content-Type: {}\n\n".format(os.environ.get("CONTENT_TYPE"))
+    else:
+        msg += processed_info[1]
+    for line in processed_info[0]:
+        msg += line
+    
+    client.sendall(msg)
    
     
 
