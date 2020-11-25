@@ -288,6 +288,9 @@ def main():
                 except FileNotFoundError:
                     
                     client.send(status_404(file_extension).encode())
+
+                except BrokenPipeError:
+                    pass
                 
                 finally:
                     client.close()
@@ -298,13 +301,9 @@ def main():
                 environment_setup(request, port)
                 resource= "".join(resource.split("/")[1:]) 
                 file_extension = resource.split(".")[1]
-
-                
-
                 file_path = "./cgibin/{}".format(resource)
                 exec_program = exec_program.strip()
-                print(exec_program)
-                print(file_path)
+                
                 
                 cgi(client, file_extension, file_path, exec_program)
 
