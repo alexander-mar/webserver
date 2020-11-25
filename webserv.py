@@ -202,7 +202,7 @@ def cgi(client, file_extension, filepath, execpath):
             client.close()
 
 
-        client.close()
+        
         
     #error recieved
     else:
@@ -349,6 +349,8 @@ def main():
         elif pid < 0:
             client.close()
             sys.exit(-1)
+
+        client.close()
 
 if __name__ == '__main__':
     main()
