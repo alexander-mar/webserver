@@ -124,11 +124,14 @@ def status_200(file_extension, file):
     output = "HTTP/1.1 200 OK\n"
     output += "Content Type: {}\n\n".format(file_extension)
     data = ""
-    lines = file.readlines()
-    for line in lines:
-        data += line
+    if not isinstance(file, str):
+        lines = file.readlines()
+        for line in lines:
+            data += line
 
-    output += data
+        output += data
+    else:
+        output = file
     return output
 
 #status message
