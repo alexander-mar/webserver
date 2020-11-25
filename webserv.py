@@ -154,6 +154,7 @@ def status_505(file_extension):
               
 #cgi set up method
 def cgi(client, file_extension, filepath, execpath):
+    error = False
     #create a pipe 
     r, w = os.pipe() 
 
@@ -162,58 +163,45 @@ def cgi(client, file_extension, filepath, execpath):
 
     #referring to grandchild process
     if pid_grandchild == 0:
-        
+       
         #write to pipe
+        
         os.dup2(w,1)
-        
-        
+
         if (os.path.isfile(filepath)):
             try:
                 os.execv(execpath, (execpath, filepath))
                 
             except FileNotFoundError:
+                error = True
+                os._exit(0)
                 
-                os.close(w)
-                os.close(r)
-                client.send("HTTP/1.1 500 Internal Server Error\n".encode())
-                err_string = """500 Internal Server Error\n\n<html>\n<head>\n\t<title>500 Internal Server Error</title>\n</head>
-    <body bgcolor="white">\n<center>\n\t<h1>500 Internal Server Error</h1>\n</center>\n</body>\n</html>\n"""
-                client.send(err_string.encode())
-                client.send
-                sys.exit()
 
             finally:
                 
                 client.close()
                 os._exit(0)
-        else:
-            client.send("HTTP/1.1 500 Internal Server Error\n".encode())
-            err_string = """500 Internal Server Error\n\n<html>\n<head>\n\t<title>500 Internal Server Error</title>\n</head>
-    <body bgcolor="white">\n<center>\n\t<h1>500 Internal Server Error</h1>\n</center>\n</body>\n</html>\n"""
-            client.send(err_string.encode())
-            #client.send(status_505(file_extension).encode())
-            client.close()
-
-
 
     #refering to parent
     elif pid_grandchild > 0:
         
-        wait = os.wait()
+        #wait = os.wait()
         #read pipe from grandchild and sent to client
-        data_read = os.read(r, 4096).decode()
+        data_read = os.read(r, 1024).decode()
         os.close(w)
         os.close(r)
-        
-        #could send preset one as well?
-        client.send("HTTP/1.1 200 OK\n".encode())
-        client.sendall(data_read.encode())
+        if error:
+            client.send(status_505(file_extension).encode())
+        else:
+            client.send(status_200(file_extension, data_read).encode())
         client.close()
-
+        
+        
     #error recieved
     else:
-        client.close()   
-        sys.exit()
+        client.close()
+         
+   
     
 
 #main method
