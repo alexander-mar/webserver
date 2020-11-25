@@ -87,7 +87,7 @@ def environment_setup(request, port):
     os.environ["QUERY_STRING"] = query_string
     os.environ["SERVER_ADDR"] = "127.0.0.1" 
     os.environ["SERVER_PORT"] = str(port)
-    print("HERE"+request_uri)
+    
 
     #environment_data["REQUEST_METHOD"] = request_method #this is like GET
     #environment_data["REQUEST_URI"] = request_uri #resource upon which to apply request, url as given in html
@@ -160,53 +160,51 @@ def cgi(client, file_extension, filepath, execpath):
     #creating grandchild process
     pid_grandchild = os.fork()
 
+    #referring to grandchild process
+    if pid_grandchild == 0:
+        print("here")
+        #write to pipe
+        os.dup2(w,1)
+        
+        
+        if (os.path.isfile(filepath)):
+            try:
+                os.execv(execpath, (execpath, filepath))
+                
+            except FileNotFoundError:
+                
+                os.close(w)
+                os.close(r)
+                client.send(status_505(file_extension).encode())
+                #sys.exit()
+
+            finally:
+                
+                client.close()
+                os._exit(0)
+        else:
+            
+            client.send(status_505(file_extension).encode())
+            client.close()
+
+
+
     #refering to parent
-    if pid_grandchild > 0:
+    elif pid_grandchild > 0:
         #read pipe from grandchild and sent to client
         data_read = os.read(r, 4096).decode()
         os.close(w)
         os.close(r)
         
+        #could send preset one as well?
         client.send("HTTP/1.1 200 OK\n".encode())
-
-        #if not("Content-Type" in data_read):
-         #  client.send("Content-Type: \n".encode())
-        #client.send("\n".encode())
         client.sendall(data_read.encode())
         client.close()
-        #data = os.read(r)
-        #client.sendall(data.encode("atf-8"))
-        #os.close(r)
-        
-    #referring to grandchild process
-    elif pid_grandchild == 0:
-        print("executing")
-        #write to pipe
-        os.dup2(w,1)
-        if (os.path.isfile(filepath)):
-            try:
-                print("here")
-                os.execv(execpath, (execpath, filepath))
-                os.execv()
-            except FileNotFoundError:
-                print("here")
-                os.close(w)
-                os.close(r)
-                client.send(status_505(file_extension).encode())
-                sys.exit()
-            finally:
-                print("here")
-                client.close()
-                os._exit(0)
-        else:
-            print(os.path)
-            print(filepath)
-            client.send(status_505(file_extension).encode())
-            client.close()
-
     #error recieved
     else:
-        client.close()
+        client.close()   
+   
+    
 
 #main method
 def main():
