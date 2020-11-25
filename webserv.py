@@ -157,9 +157,12 @@ def status_505(file_extension):
               
 #cgi set up method
 def cgi(client, file_extension, filepath, execpath):
-    error = False
+   
     #create a pipe 
     content_read = ""
+    status_string = ""
+    header = ""
+
     r, w = os.pipe() 
 
     #creating grandchild process
@@ -182,7 +185,7 @@ def cgi(client, file_extension, filepath, execpath):
                 
             finally:
                 client.close()
-                
+
             os._exit(0)
 
     #refering to parent
