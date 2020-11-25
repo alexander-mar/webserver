@@ -239,7 +239,7 @@ def cgi(client, file_extension, filepath, execpath):
     for line in processed_info[0]:
         msg += line
     
-    client.sendall(msg)
+    client.sendall(msg.encode())
    
     
 
