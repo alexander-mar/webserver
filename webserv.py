@@ -138,8 +138,8 @@ def cgi(client, file_extension, filepath, execpath):
 
     # setting up
     content_read = ""
-    status_string = ""
-    header = ""
+    status = ""
+    head = ""
 
     # create a pipe, and process
     r, w = os.pipe()
@@ -185,37 +185,39 @@ def cgi(client, file_extension, filepath, execpath):
     while(i < len(content_read)):
         if("Status-Code" in content_read[i]):
             codes = content_read[i].split(" ", 2)
-            status_string = "HTTP/1.1 {} {}\n".format(codes[1], codes[2])
+            status = "HTTP/1.1 {} {}\n".format(codes[1], codes[2])
         elif("Content-Type" in content_read[i]):
-            header = content_read[i]
+            head = content_read[i]
         else:
             break
         i += 1
-
-    if(i > 0):
+    
+    if i > 0:
         content_read = content_read[i+1:]
 
-    processed_info = "\n".join(content_read), header, status_string
+    processed_info = "\n".join(content_read), head, status
 
-    msg = ""
+    message = ""
     if(processed_info[2] == ""):
-        msg += "HTTP/1.1 200 OK\n"
+        message += "HTTP/1.1 200 OK\n"
     else:
-        msg += processed_info[2]
+        message += processed_info[2]
     if(processed_info[2] == ""):
-        msg += "Content-Type: {}\n\n".format(os.environ.get("CONTENT_TYPE"))
+        message += "Content-Type: {}\n\n".format(os.environ.get("CONTENT_TYPE"))
     else:
-        msg += processed_info[1]
+        message += processed_info[1]
     for line in processed_info[0]:
-        msg += line
+        message += line
 
-    client.sendall(msg.encode())
+    client.sendall(message.encode())
 
 
 # main method
 def main():
-    staticfile_directory, cgibin_directory, port, exec_program = read_config()
-
+    #staticfile_directory, cgibin_directory, port, exec_program = read_config()
+    info = read_config()
+    port = info[2]
+    exec_program = info[3]
     # set up server connection
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -226,7 +228,7 @@ def main():
     while True:
         accept_results = server.accept()
         client = accept_results[0]
-        addr = accept_results[1]
+        #addr = accept_results[1]
 
         # entire html request
         request = client.recv(1024).decode()
@@ -270,25 +272,21 @@ def main():
                 try:
                     if extension in binary_possibilities:
                         with open(file_name, "rb") as file:
-                            client.send(status_200(
-                                file_extension, file).encode())
+                            client.send(status_200(file_extension, file).encode())
                     else:
                         with open(file_name, "r") as file:
                             every_line = file.readlines()
 
                             if "Content-Type" in every_line[0]:
-                                client.send(status_200(
-                                    file_extension, file).encode())
+                                client.send(status_200(file_extension, file).encode())
                             else:
                                 client.send("HTTP/1.1 200 OK\n".encode())
-                                client.send(
-                                    f'Content-Type: {file_extension}\n'.encode())
+                                client.send(f'Content-Type: {file_extension}\n'.encode())
                                 client.send('\n'.encode())
                                 for line in every_line:
                                     client.send(line.encode())
 
                 except FileNotFoundError:
-
                     client.send(status_404(file_extension).encode())
 
                 except BrokenPipeError:
