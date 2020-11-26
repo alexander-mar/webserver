@@ -214,10 +214,11 @@ def cgi(client, file_extension, filepath, execpath):
 
 # main method
 def main():
-    #staticfile_directory, cgibin_directory, port, exec_program = read_config()
+    
     info = read_config()
     port = info[2]
     exec_program = info[3]
+
     # set up server connection
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -228,16 +229,13 @@ def main():
     while True:
         accept_results = server.accept()
         client = accept_results[0]
-        #addr = accept_results[1]
 
         # entire html request
         request = client.recv(1024).decode()
 
         # first line key info
         first_line = request.split("/n")[0].split()
-        #method = first_line[0]
         resource_name = first_line[1]
-        #protocol = first_line[2]
 
         if resource_name.strip() == "/":
             
@@ -268,15 +266,17 @@ def main():
 
                 binary_possibilities = ["image/png", "image/jpeg"]
 
-                # checking if exists or not
+               
                 try:
                     if extension in binary_possibilities:
+                        # binary 
                         with open(file_name, "rb") as file:
                             client.send(status_200(file_extension, file).encode())
                     else:
+                        # non binary
                         with open(file_name, "r") as file:
                             every_line = file.readlines()
-
+                            
                             if "Content-Type" in every_line[0]:
                                 client.send(status_200(file_extension, file).encode())
                             else:
