@@ -1,4 +1,3 @@
-package manualtests.testfiles.cgibin;
 public class hi {
     public static void main(String[] args) {
         System.out.println("<h1>hi!</h1>");
